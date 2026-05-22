@@ -33,3 +33,6 @@ title('线型图');
 xticks(0:23);
 legend('show');
 grid on;
+
+% 设置图表所有文字为宋体
+set(findall(gcf, '-property', 'FontName'), 'FontName', 'SimSun');
