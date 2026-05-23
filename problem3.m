@@ -47,8 +47,8 @@ for wind_idx = 1:numel(wind_vectors)
             disp('最优 t 向量：'); disp(t_opt);
 
             metrics = calcProblem2Metrics(t_opt, classicload, wind, sun, fenshijijia, ...
-                                          problem1_dayload, problem1_daysell, ...
-                                          problem1_daybuy, problem1_daygenerate);
+                                          problem3_dayload, problem3_daysell, ...
+                                          problem3_daybuy, problem3_daygenerate);
 
             problem3_nh3load = metrics.nh3load;
             problem3_load = metrics.load;
@@ -97,8 +97,8 @@ end
 plotProblem2Distributions(problem3_results, beq_values);
 
 function metrics = calcProblem2Metrics(t, classicload, wind, sun, fenshijijia, ...
-                                       problem1_dayload, problem1_daysell, ...
-                                       problem1_daybuy, problem1_daygenerate)
+                                       problem3_dayload, problem3_daysell, ...
+                                       problem3_daybuy, problem3_daygenerate)
     t = t(:);
     classicload = classicload(:);
     wind = wind(:);
@@ -119,9 +119,9 @@ function metrics = calcProblem2Metrics(t, classicload, wind, sun, fenshijijia, .
     metrics.daysell = abs(sum(metrics.sell));
 
     % 保持原文件的指标计算方式
-    metrics.xnyzf = (problem1_dayload-problem1_daysell-problem1_daybuy)/problem1_daygenerate;
-    metrics.zydl = (problem1_daygenerate-problem1_daysell)/problem1_dayload;
-    metrics.xnysw = problem1_daysell/problem1_daygenerate;
+    metrics.xnyzf = (problem3_dayload-problem3_daysell-problem3_daybuy)/problem3_daygenerate;
+    metrics.zydl = (problem3_daygenerate-problem3_daysell)/problem3_dayload;
+    metrics.xnysw = problem3_daysell/problem3_daygenerate;
 end
 
 function J = objFun(t, classicload, wind, sun, fenshijijia)
