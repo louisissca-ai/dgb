@@ -41,10 +41,6 @@ for wind_idx = 1:numel(wind_vectors)
 
         slack_vectors{wind_idx, sun_idx} = slack;
 
-        fprintf('\n%s + %s 的 slack 向量如下：\n', wind_names{wind_idx}, sun_names{sun_idx});
-        slack_table = table((1:n)', slack, 'VariableNames', {'hour', 'slack'});
-        disp(slack_table);
-
         if max(slack) > best_max_slack
             best_max_slack = max(slack);
             best_wind_idx  = wind_idx;
@@ -61,23 +57,11 @@ fprintf('最大弃电场景：%s + %s（最大弃电量 = %.4g）\n', ...
 % =========================================================================
 best_slack = slack_vectors{best_wind_idx, best_sun_idx};
 b = cumsum(best_slack);
-[max_b, max_b_idx] = max(b);
-if max_b_idx < numel(b)
-    [min_after_max_b, rel_min_idx] = min(b(max_b_idx+1:end));
-    min_after_max_b_idx = max_b_idx + rel_min_idx;
-else
-    min_after_max_b = max_b;
-    min_after_max_b_idx = max_b_idx;
-    warning('max(b) 位于 b 向量最后一个位置，后面没有可选的最小值，E 按 0 计算。');
-end
-E = (max_b - min_after_max_b) * 20.75 * 2;
+E = (max(b) - min(b)) * 20.75 * 2;
 
-fprintf('b 向量：max = %.4g（位置 %d），max 后面的 min = %.4g（位置 %d）
-', ...
-        max_b, max_b_idx, min_after_max_b, min_after_max_b_idx);
-fprintf('储能容量 E = (%.4g - %.4g) * 20.75 * 2 = %.4g MW·h
-', ...
-        max_b, min_after_max_b, E);
+fprintf('b 向量：max = %.4g，min = %.4g\n', max(b), min(b));
+fprintf('储能容量 E = (%.4g - %.4g) * 20.75 * 2 = %.4g MW·h\n', ...
+        max(b), min(b), E);
 
 figure('Name', 'problem4-2：最大弃电场景储能分析', 'Color', 'w');
 subplot(2,1,1);
@@ -267,4 +251,3 @@ function plotStorageResults(storage_results, E)
         legend({'组合值','均值','最小','最大'}, 'Location','best','FontSize',8);
         hold off;
     end
-end
