@@ -1,4 +1,3 @@
-
 wind_vectors = {wind1(:), wind2(:), wind3(:), wind4(:), wind5(:), wind6(:)};
 wind_names = {'wind1', 'wind2', 'wind3', 'wind4', 'wind5', 'wind6'};
 sun_vectors = {sun1(:), sun2(:), sun3(:), sun4(:)};
@@ -8,12 +7,14 @@ classicload = classicload(:);
 fenshijijia = fenshijijia(:);
 n = numel(wind_vectors{1});
 
-
-opts = optimoptions('ga', 'Display', 'iter');
+% t 为连续变量，范围 [0.1, 1]，使用 fmincon (SQP) 求解
+opts = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp');
 
 % 分别在以下约束下运行优化：sum(t) = beq
 beq_values = [24, 21, 18, 15, 12];
 Aeq = ones(1, n);
+lb = 0.1 * ones(n, 1);
+ub = ones(n, 1);
 
 problem2_results = struct([]);
 result_idx = 0;
@@ -35,8 +36,11 @@ for wind_idx = 1:numel(wind_vectors)
             fprintf('\n========== %s + %s, beq = %g, sum(t) = %g ==========\n', ...
                     wind_name, sun_name, beq, beq);
 
-            t_opt = ga(@(t) objFun(t, classicload, wind, sun, fenshijijia), ...
-                       n, [], [], Aeq, beq, zeros(n,1), ones(n,1), [], 1:n, opts);
+            % 初始点：均匀分布并截断到 [0.1, 1]，满足等式约束
+            x0 = (beq / n) * ones(n, 1);
+
+            t_opt = fmincon(@(t) objFun(t, classicload, wind, sun, fenshijijia), ...
+                            x0, [], [], Aeq, beq, lb, ub, [], opts);
             t_opt = t_opt(:);
             J_min = objFun(t_opt, classicload, wind, sun, fenshijijia);
             fprintf('最小目标值 J = %.6g\n', J_min);
@@ -213,4 +217,3 @@ function plotProblem2Distributions(problem2_results, beq_values)
         end
     end
 end
-
