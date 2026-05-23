@@ -47,6 +47,9 @@ for wind_idx = 1:numel(wind_vectors)
         fprintf('总用电量中绿电占比 = %.6g\n', metrics.zydl);
         fprintf('新能源上网电量比例 = %.6g\n', metrics.xnysw);
 
+        J = objFun(t_opt, classicload, wind, sun, fenshijijia);
+        fprintf('目标函数 J = %.6g\n', J);
+
         result_idx = result_idx + 1;
         problem4_results(result_idx).case_idx    = result_idx;
         problem4_results(result_idx).wind_idx    = wind_idx;
@@ -72,6 +75,33 @@ for wind_idx = 1:numel(wind_vectors)
 end
 
 plotProblem4Distributions(problem4_results);
+
+% -------------------------------------------------------------------------
+function J = objFun(t, classicload, wind, sun, fenshijijia)
+    t = t(:);
+    classicload = classicload(:);
+    wind = wind(:);
+    sun = sun(:);
+    fenshijijia = fenshijijia(:);
+
+    problem4_nh3load = t*20.75*2;
+    problem4_load = classicload*6 + problem4_nh3load;
+    problem4_generate = wind*40 + sun*64;
+    problem4_buy = problem4_load - problem4_generate;
+    problem4_sell = problem4_buy;
+    problem4_buy(problem4_buy<0) = 0;
+    problem4_sell(problem4_sell>0) = 0;
+    problem4_buycost = sum(problem4_buy .* fenshijijia);
+    problem4_sellcost = sum(problem4_sell*377.9);
+    problem4_cost =   problem4_sellcost + problem4_buycost ...
+                  + 0.75*2*sum(t)*2 ...
+                  + 1.5*2*1000*0.2*60000/365/30 ...
+                  + 10*2*sum(t)*100 ...
+                  + 10*2*sum(t)*150 ...
+                  + sum(sun)*64*1000*0.12 ...
+                  + sum(wind)*40*1000*0.15;
+    J = problem4_cost / (sum(t)*3);
+end
 
 % -------------------------------------------------------------------------
 function metrics = calcMetrics(t, classicload, wind, sun, fenshijijia)
