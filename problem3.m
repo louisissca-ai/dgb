@@ -16,7 +16,7 @@ Aeq = ones(1, n);
 lb = 0.1 * ones(n, 1);
 ub = ones(n, 1);
 
-problem2_results = struct([]);
+problem3_results = struct([]);
 result_idx = 0;
 
 for wind_idx = 1:numel(wind_vectors)
@@ -50,51 +50,51 @@ for wind_idx = 1:numel(wind_vectors)
                                           problem1_dayload, problem1_daysell, ...
                                           problem1_daybuy, problem1_daygenerate);
 
-            problem2_nh3load = metrics.nh3load;
-            problem2_load = metrics.load;
-            problem2_generate = metrics.generate;
-            problem2_buy = metrics.buy;
-            problem2_sell = metrics.sell;
-            problem2_buycost = metrics.buycost;
-            problem2_dayload = metrics.dayload;
-            problem2_daygenerate = metrics.daygenerate;
-            problem2_daybuy = metrics.daybuy;
-            problem2_daysell = metrics.daysell;
-            problem2_xnyzf = metrics.xnyzf;
-            problem2_zydl = metrics.zydl;
-            problem2_xnysw = metrics.xnysw;
+            problem3_nh3load = metrics.nh3load;
+            problem3_load = metrics.load;
+            problem3_generate = metrics.generate;
+            problem3_buy = metrics.buy;
+            problem3_sell = metrics.sell;
+            problem3_buycost = metrics.buycost;
+            problem3_dayload = metrics.dayload;
+            problem3_daygenerate = metrics.daygenerate;
+            problem3_daybuy = metrics.daybuy;
+            problem3_daysell = metrics.daysell;
+            problem3_xnyzf = metrics.xnyzf;
+            problem3_zydl = metrics.zydl;
+            problem3_xnysw = metrics.xnysw;
 
-            fprintf('新能源自发自用电量占总可用发电量比例 = %.6g\n', problem2_xnyzf);
-            fprintf('总用电量中绿电占比 = %.6g\n', problem2_zydl);
-            fprintf('新能源上网电量比例 = %.6g\n', problem2_xnysw);
+            fprintf('新能源自发自用电量占总可用发电量比例 = %.6g\n', problem3_xnyzf);
+            fprintf('总用电量中绿电占比 = %.6g\n', problem3_zydl);
+            fprintf('新能源上网电量比例 = %.6g\n', problem3_xnysw);
 
             result_idx = result_idx + 1;
-            problem2_results(result_idx).case_idx = result_idx;
-            problem2_results(result_idx).wind_idx = wind_idx;
-            problem2_results(result_idx).wind_name = wind_name;
-            problem2_results(result_idx).sun_idx = sun_idx;
-            problem2_results(result_idx).sun_name = sun_name;
-            problem2_results(result_idx).beq = beq;
-            problem2_results(result_idx).t_opt = t_opt;
-            problem2_results(result_idx).J_min = J_min;
-            problem2_results(result_idx).nh3load = problem2_nh3load;
-            problem2_results(result_idx).load = problem2_load;
-            problem2_results(result_idx).generate = problem2_generate;
-            problem2_results(result_idx).buy = problem2_buy;
-            problem2_results(result_idx).sell = problem2_sell;
-            problem2_results(result_idx).buycost = problem2_buycost;
-            problem2_results(result_idx).dayload = problem2_dayload;
-            problem2_results(result_idx).daygenerate = problem2_daygenerate;
-            problem2_results(result_idx).daybuy = problem2_daybuy;
-            problem2_results(result_idx).daysell = problem2_daysell;
-            problem2_results(result_idx).xnyzf = problem2_xnyzf;
-            problem2_results(result_idx).zydl = problem2_zydl;
-            problem2_results(result_idx).xnysw = problem2_xnysw;
+            problem3_results(result_idx).case_idx = result_idx;
+            problem3_results(result_idx).wind_idx = wind_idx;
+            problem3_results(result_idx).wind_name = wind_name;
+            problem3_results(result_idx).sun_idx = sun_idx;
+            problem3_results(result_idx).sun_name = sun_name;
+            problem3_results(result_idx).beq = beq;
+            problem3_results(result_idx).t_opt = t_opt;
+            problem3_results(result_idx).J_min = J_min;
+            problem3_results(result_idx).nh3load = problem3_nh3load;
+            problem3_results(result_idx).load = problem3_load;
+            problem3_results(result_idx).generate = problem3_generate;
+            problem3_results(result_idx).buy = problem3_buy;
+            problem3_results(result_idx).sell = problem3_sell;
+            problem3_results(result_idx).buycost = problem3_buycost;
+            problem3_results(result_idx).dayload = problem3_dayload;
+            problem3_results(result_idx).daygenerate = problem3_daygenerate;
+            problem3_results(result_idx).daybuy = problem3_daybuy;
+            problem3_results(result_idx).daysell = problem3_daysell;
+            problem3_results(result_idx).xnyzf = problem3_xnyzf;
+            problem3_results(result_idx).zydl = problem3_zydl;
+            problem3_results(result_idx).xnysw = problem3_xnysw;
         end
     end
 end
 
-plotProblem2Distributions(problem2_results, beq_values);
+plotProblem2Distributions(problem3_results, beq_values);
 
 function metrics = calcProblem2Metrics(t, classicload, wind, sun, fenshijijia, ...
                                        problem1_dayload, problem1_daysell, ...
@@ -131,34 +131,34 @@ function J = objFun(t, classicload, wind, sun, fenshijijia)
     sun = sun(:);
     fenshijijia = fenshijijia(:);
 
-    problem2_nh3load = t*20.75*2;
-    problem2_load = classicload*6 + problem2_nh3load;
-    problem2_generate = wind*40 + sun*64;
-    problem2_buy = problem2_load - problem2_generate;
-    problem2_sell = problem2_buy;
-    problem2_buy(problem2_buy<0) = 0;
-    problem2_sell(problem2_sell>0) = 0;
-    problem2_buycost = sum(problem2_buy .* fenshijijia);
-    problem2_sellcost = sum(problem2_sell*377.9);
-    problem2_cost =   problem2_sellcost + problem2_buycost ...
+    problem3_nh3load = t*20.75*2;
+    problem3_load = classicload*6 + problem3_nh3load;
+    problem3_generate = wind*40 + sun*64;
+    problem3_buy = problem3_load - problem3_generate;
+    problem3_sell = problem3_buy;
+    problem3_buy(problem3_buy<0) = 0;
+    problem3_sell(problem3_sell>0) = 0;
+    problem3_buycost = sum(problem3_buy .* fenshijijia);
+    problem3_sellcost = sum(problem3_sell*377.9);
+    problem3_cost =   problem3_sellcost + problem3_buycost ...
                   + 0.75*2*sum(t)*2 ...
                   + 1.5*2*1000*0.2*60000/365/30 ...
                   + 10*2*sum(t)*100 ...
                   + 10*2*sum(t)*150 ...
                   + sum(sun)*64*1000*0.12 ...
                   + sum(wind)*40*1000*0.15;
-    J = problem2_cost / (sum(t)*3);
+    J = problem3_cost / (sum(t)*3);
 end
 
-function plotProblem2Distributions(problem2_results, beq_values)
+function plotProblem2Distributions(problem3_results, beq_values)
     metric_fields = {'xnyzf', 'zydl', 'xnysw', 'J_min', 'daybuy', 'daysell'};
-    metric_names = {'problem2\_xnyzf', 'problem2\_zydl', 'problem2\_xnysw', ...
-                    'J', 'problem2\_daybuy', 'problem2\_daysell'};
+    metric_names = {'problem3\_xnyzf', 'problem3\_zydl', 'problem3\_xnysw', ...
+                    'J', 'problem3\_daybuy', 'problem3\_daysell'};
 
     for beq_idx = 1:numel(beq_values)
         beq = beq_values(beq_idx);
-        beq_mask = [problem2_results.beq] == beq;
-        beq_results = problem2_results(beq_mask);
+        beq_mask = [problem3_results.beq] == beq;
+        beq_results = problem3_results(beq_mask);
 
         if isempty(beq_results)
             warning('beq = %g 没有可绘制的结果。', beq);
