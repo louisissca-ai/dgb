@@ -40,6 +40,8 @@ for wind_idx = 1:numel(wind_vectors)
         end
 
         slack_vectors{wind_idx, sun_idx} = slack;
+        fprintf('  %s + %s 弃电/缺电向量：\n', wind_names{wind_idx}, sun_names{sun_idx});
+        fprintf('    ['); fprintf(' %8.4g', slack); fprintf(' ]\n');
 
         if max(slack) > best_max_slack
             best_max_slack = max(slack);
@@ -57,11 +59,14 @@ fprintf('最大弃电场景：%s + %s（最大弃电量 = %.4g）\n', ...
 % =========================================================================
 best_slack = slack_vectors{best_wind_idx, best_sun_idx};
 b = cumsum(best_slack);
-E = (max(b) - min(b)) * 20.75 * 2;
 
-fprintf('b 向量：max = %.4g，min = %.4g\n', max(b), min(b));
+[max_b, max_b_idx] = max(b);
+min_b_after = min(b(max_b_idx:end));   % max(b) 之后的最小值
+E = (max_b - min_b_after) * 20.75 * 2;
+
+fprintf('b 向量：max = %.4g（位置 %d），max 之后最小 = %.4g\n', max_b, max_b_idx, min_b_after);
 fprintf('储能容量 E = (%.4g - %.4g) * 20.75 * 2 = %.4g MW·h\n', ...
-        max(b), min(b), E);
+        max_b, min_b_after, E);
 
 figure('Name', 'problem4-2：最大弃电场景储能分析', 'Color', 'w');
 subplot(2,1,1);
@@ -73,8 +78,8 @@ xlabel('时段'); ylabel('弃电(+) / 缺电(-)');
 
 subplot(2,1,2);
 plot(b, 'b-o', 'LineWidth', 1.2); grid on;
-yline(max(b), 'r--', sprintf('max = %.4g', max(b)));
-yline(min(b), 'g--', sprintf('min = %.4g', min(b)));
+yline(max_b,       'r--', sprintf('max = %.4g（位置 %d）', max_b, max_b_idx));
+yline(min_b_after, 'g--', sprintf('max 后最小 = %.4g', min_b_after));
 title(sprintf('累积向量 b，储能容量 E = %.4g MW·h', E), 'Interpreter', 'none');
 xlabel('时段'); ylabel('累积弃电量');
 
