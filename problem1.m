@@ -1,0 +1,34 @@
+problem1_load = classicload*6+20.75;
+x = linspace(0,23,24);
+problem1_generate = classicwind*40+classicsun*64;
+problem1_buy = problem1_load - problem1_generate;
+problem1_sell = problem1_buy;
+problem1_buy(problem1_buy<0) = 0;
+problem1_sell(problem1_sell>0) = 0;
+figure;
+hold on;
+plot(x, problem1_load, '-o', 'DisplayName', '典型日用电负荷功率');
+plot(x, problem1_sell, '-s', 'DisplayName', '卖电功率');
+plot(x, problem1_generate, '-^', 'DisplayName', '风光发电功率');
+plot(x, problem1_buy, '-d', 'DisplayName', '买电功率');
+hold off;
+
+xlabel('时间');
+ylabel('/MW');
+title('问题一第一小问');
+
+xticks(0:23);
+legend('show');
+grid on;
+problem1_dayload = sum(problem1_load);
+problem1_daygenerate = sum(problem1_generate);
+problem1_daybuy = sum(problem1_buy);
+problem1_daysell = abs(sum(problem1_sell));
+problem1_xnyzf = (problem1_dayload-problem1_daysell-problem1_daybuy)/problem1_daygenerate;
+problem1_zydl = (problem1_daygenerate-problem1_daysell)/problem1_dayload;
+problem1_xnysw = problem1_daysell/problem1_daygenerate;
+fenshijijia = [342.4*ones(7,1); 607.4*ones(3,1); 802.4*ones(5,1); 607.4*ones(3,1); 802.4*ones(3,1); 607.4*ones(2,1); 342.4];
+problem1_buycost = sum(problem1_buy .* fenshijijia);
+problem1_sellcost = sum(problem1_sell*377.9);
+problem1_cost = problem1_sellcost+problem1_buycost+0.75*24*2+1.5*1000*0.2*60000/365/30+10*24*100+10*24*150+sum(classicsun)*64*1000*0.12+sum(classicwind)*40*1000*0.15;
+problem1_costnh3 = problem1_cost/36;
