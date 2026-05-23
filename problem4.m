@@ -77,6 +77,37 @@ end
 plotProblem4Distributions(problem4_results);
 
 % -------------------------------------------------------------------------
+% 风光最小装机容量分析
+% -------------------------------------------------------------------------
+fprintf('\n\n==================== 风光最小装机容量分析 ====================\n');
+capacity_results = struct([]);
+cap_idx = 0;
+
+for wind_idx = 1:numel(wind_vectors)
+    wind = wind_vectors{wind_idx};
+    wind_name = wind_names{wind_idx};
+    for sun_idx = 1:numel(sun_vectors)
+        sun = sun_vectors{sun_idx};
+        sun_name = sun_names{sun_idx};
+
+        [Cw_min, Cs_min] = calcMinCapacity(wind, sun, classicload);
+
+        cap_idx = cap_idx + 1;
+        capacity_results(cap_idx).wind_name = wind_name;
+        capacity_results(cap_idx).sun_name  = sun_name;
+        capacity_results(cap_idx).wind_idx  = wind_idx;
+        capacity_results(cap_idx).sun_idx   = sun_idx;
+        capacity_results(cap_idx).Cw_min    = Cw_min;
+        capacity_results(cap_idx).Cs_min    = Cs_min;
+
+        fprintf('%-8s + %-6s：最小风电装机 Cw = %.4g MW，最小光电装机 Cs = %.4g MW\n', ...
+                wind_name, sun_name, Cw_min, Cs_min);
+    end
+end
+
+plotMinCapacity(capacity_results);
+
+% -------------------------------------------------------------------------
 function J = objFun(t, classicload, wind, sun, fenshijijia)
     t = t(:);
     classicload = classicload(:);
@@ -183,4 +214,71 @@ function plotProblem4Distributions(problem4_results)
         legend({'组合值', '均值', '最小值', '最大值'}, 'Location', 'best', 'FontSize', 8);
         hold off;
     end
+end
+
+% -------------------------------------------------------------------------
+function [Cw_min, Cs_min] = calcMinCapacity(wind, sun, classicload)
+    % 求最小风电(Cw)和光电(Cs)装机容量，使所有时段满足 ub >= lb=0.1
+    % 即：wind_i*Cw + sun_i*Cs >= classicload_i*6 + 0.1*20.75*2  for all i
+    % 目标：最小化 Cw + Cs
+    wind = wind(:); sun = sun(:); classicload = classicload(:);
+    rhs = classicload * 6 + 0.1 * 20.75 * 2;
+
+    % linprog: min f'x  s.t. A*x<=b, x>=lb
+    % 变量 x = [Cw; Cs]
+    f_cap  = [1; 1];
+    A_cap  = -[wind, sun];   % -wind*Cw - sun*Cs <= -rhs
+    b_cap  = -rhs;
+    lb_cap = [0; 0];
+
+    opts_cap = optimoptions('linprog', 'Display', 'off');
+    [x_opt, ~, exitflag] = linprog(f_cap, A_cap, b_cap, [], [], lb_cap, [], opts_cap);
+
+    if exitflag == 1
+        Cw_min = x_opt(1);
+        Cs_min = x_opt(2);
+    else
+        Cw_min = NaN;
+        Cs_min = NaN;
+        warning('calcMinCapacity：线性规划无可行解，exitflag=%d。', exitflag);
+    end
+end
+
+% -------------------------------------------------------------------------
+function plotMinCapacity(capacity_results)
+    if isempty(capacity_results)
+        warning('没有可绘制的装机容量结果。');
+        return;
+    end
+
+    sort_keys = [[capacity_results.wind_idx]', [capacity_results.sun_idx]'];
+    [~, order] = sortrows(sort_keys, [1 2]);
+    capacity_results = capacity_results(order);
+
+    combo_labels = arrayfun(@(r) sprintf('%s+%s', r.wind_name, r.sun_name), ...
+                            capacity_results, 'UniformOutput', false);
+    Cw_vals = [capacity_results.Cw_min];
+    Cs_vals = [capacity_results.Cs_min];
+
+    figure('Name', 'problem4：最小风光装机容量', 'Color', 'w');
+
+    subplot(1, 2, 1);
+    bar(Cw_vals, 'FaceColor', [0.2 0.6 0.4]);
+    grid on;
+    title(sprintf('最小风电装机容量 Cw (MW)\n均值=%.4g，最小=%.4g，最大=%.4g', ...
+          mean(Cw_vals(~isnan(Cw_vals))), min(Cw_vals), max(Cw_vals)), 'Interpreter', 'none');
+    xlabel('wind + sun 组合');
+    ylabel('Cw_{min} (MW)', 'Interpreter', 'none');
+    set(gca, 'XTick', 1:numel(combo_labels), 'XTickLabel', combo_labels, 'XTickLabelRotation', 45);
+    xlim([0.5, numel(combo_labels) + 0.5]);
+
+    subplot(1, 2, 2);
+    bar(Cs_vals, 'FaceColor', [0.9 0.6 0.1]);
+    grid on;
+    title(sprintf('最小光电装机容量 Cs (MW)\n均值=%.4g，最小=%.4g，最大=%.4g', ...
+          mean(Cs_vals(~isnan(Cs_vals))), min(Cs_vals), max(Cs_vals)), 'Interpreter', 'none');
+    xlabel('wind + sun 组合');
+    ylabel('Cs_{min} (MW)', 'Interpreter', 'none');
+    set(gca, 'XTick', 1:numel(combo_labels), 'XTickLabel', combo_labels, 'XTickLabelRotation', 45);
+    xlim([0.5, numel(combo_labels) + 0.5]);
 end
